@@ -1,0 +1,63 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div id="content-main">
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="module">
+            <h1>{{ title }}</h1>
+
+            <p>Sending email to <strong>{{ selected_count }} user{{ selected_count|pluralize }}</strong>:</p>
+
+            <ul>
+                {% for user in users %}
+                    <li>{{ user.email }} — {{ user.name|default:user.email }}</li>
+                {% endfor %}
+            </ul>
+
+            <fieldset class="module aligned wide">
+                <div class="form-row">
+                    {{ form.subject.errors }}
+                    {{ form.subject.label_tag }}
+                    {{ form.subject }}
+                </div>
+
+                <div class="form-row">
+                    {{ form.project_name.errors }}
+                    {{ form.project_name.label_tag }}
+                    {{ form.project_name }}
+                </div>
+
+                <div class="form-row">
+                    {{ form.message.errors }}
+                    <label>Plain Text Message (optional if HTML is provided)</label>
+                    {{ form.message }}
+                </div>
+
+                <div class="form-row">
+                    {{ form.html_message.errors }}
+                    <label>HTML Message (optional if plain text is provided)</label>
+                    {{ form.html_message }}
+                </div>
+            </fieldset>
+
+            <p><strong>Available placeholders:</strong>
+               <code>{{ name }}</code>, <code>{{ email }}</code>, <code>{{ mobile }}</code>, <code>{{ project_name }}</code>
+            </p>
+
+            <input type="hidden" name="action" value="send_custom_email">
+            {% for user in users %}
+                <input type="hidden" name="_selected_action" value="{{ user.pk }}">
+            {% endfor %}
+
+            <div class="submit-row">
+                <input type="submit" name="apply" value="Send Emails Now" class="default">
+                <a href="{% url 'admin:api_user_changelist' %}" class="button cancel-link">Cancel</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
