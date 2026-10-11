@@ -1,0 +1,112 @@
+{% extends "admin/index.html" %}
+{% load i18n static %}
+
+{% block content %}
+  {% if show_metrics %}
+    <!-- Modern Stats Cards CSS -->
+    <style>
+      .metrics-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      }
+      .metric-card {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        border: 1px solid rgba(255,255,255,0.08);
+        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 100px;
+        position: relative;
+        overflow: hidden;
+      }
+      .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+      }
+      .metric-card::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+        pointer-events: none;
+      }
+      .metric-title {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 8px;
+      }
+      .metric-value {
+        color: #f8fafc;
+        font-size: 2.2rem;
+        font-weight: 700;
+        line-height: 1;
+        margin: 5px 0;
+      }
+      .metric-desc {
+        color: #64748b;
+        font-size: 0.75rem;
+        margin-top: 6px;
+      }
+      .metric-icon {
+        position: absolute;
+        right: 15px;
+        bottom: 15px;
+        font-size: 2.5rem;
+        opacity: 0.15;
+        color: #6366f1;
+      }
+    </style>
+
+    <div class="metrics-container">
+      <div class="metric-card">
+        <div class="metric-title">Total Student </div>
+        <div class="metric-value">{{ total_employees }}</div>
+        <div class="metric-desc">Registered staff accounts</div>
+        <span class="metric-icon">👥</span>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-title">Active Permissions</div>
+        <div class="metric-value">{{ active_permissions_count }}</div>
+        <div class="metric-desc">Assigned permissions globally</div>
+        <span class="metric-icon">🔑</span>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-title">Restricted Modules</div>
+        <div class="metric-value">{{ restricted_count }}</div>
+        <div class="metric-desc">Modules hidden from your view</div>
+        <span class="metric-icon">🚫</span>
+      </div>
+      
+      <div class="metric-card">
+        <div class="metric-title">Last Login</div>
+        <div class="metric-value" style="font-size: 1.1rem; font-weight: 600; margin-top: 15px; color: #38bdf8;">
+          {% if last_login_time %}
+            {{ last_login_time|date:"d M Y, H:i" }}
+          {% else %}
+            Just Now
+          {% endif %}
+        </div>
+        <div class="metric-desc">Your last login session</div>
+        <span class="metric-icon">🕒</span>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Continue rendering original Django admin index content -->
+  {{ block.super }}
+{% endblock %}

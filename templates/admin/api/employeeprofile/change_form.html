@@ -1,0 +1,283 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    /* Premium Dark Theme Variables */
+    :root {
+        --bg-primary: #0f172a;
+        --bg-secondary: #1e293b;
+        --bg-tertiary: #334155;
+        --text-primary: #f8fafc;
+        --text-secondary: #cbd5e1;
+        --accent: #3b82f6;
+        --accent-hover: #2563eb;
+        --accent-glow: rgba(59, 130, 246, 0.5);
+        --danger: #ef4444;
+        --success: #10b981;
+        --border-color: #334155;
+        --border-radius: 8px;
+    }
+
+    /* Grid Layout */
+    .premium-grid {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin: 20px 0;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        color: var(--text-primary);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    
+    .premium-grid th {
+        background: var(--bg-primary);
+        padding: 16px;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-secondary);
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    .premium-grid td {
+        padding: 16px;
+        vertical-align: middle;
+        border-bottom: 1px solid var(--border-color);
+        transition: background-color 0.2s ease;
+    }
+
+    .premium-grid tr:last-child td {
+        border-bottom: none;
+    }
+
+    .premium-grid tr:hover td {
+        background: var(--bg-tertiary);
+    }
+
+    .model-name {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-primary);
+    }
+
+    /* Toggle Switches */
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+    }
+    
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 48px;
+        height: 24px;
+        margin-right: 12px;
+    }
+    
+    .switch input { 
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--bg-tertiary);
+        transition: .3s;
+        border-radius: 24px;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .3s;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    input:checked + .slider {
+        background-color: var(--accent);
+        box-shadow: 0 0 8px var(--accent-glow);
+    }
+    
+    input:checked + .slider:before {
+        transform: translateX(24px);
+    }
+
+    /* Live Summary Box */
+    .summary-box {
+        margin-top: 30px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 20px;
+        color: var(--text-primary);
+        font-family: 'Inter', -apple-system, sans-serif;
+    }
+    
+    .summary-title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 12px;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .summary-content {
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: var(--text-secondary);
+    }
+    
+    .summary-highlight {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block field_sets %}
+    {% for fieldset in adminform %}
+      {% include "admin/includes/fieldset.html" %}
+    {% endfor %}
+
+    <div class="module">
+        <h2>Employee Access Control Grid</h2>
+        
+        <table class="premium-grid">
+            <thead>
+                <tr>
+                    <th>Module / Panel</th>
+                    <th>Visible Admin Panel</th>
+                    <th>View Only</th>
+                    <th>Add</th>
+                    <th>Edit (Change)</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for model_key, grid_val in adminform.form.grid_data.items %}
+                <tr>
+                    <td><span class="model-name">{{ grid_val.name }}</span></td>
+                    
+                    <!-- Visible Admin Panel Toggle -->
+                    <td>
+                        <label class="switch toggle-container">
+                            <input type="checkbox" class="toggle-input visible-toggle" data-model="{{ grid_val.name }}" name="visible_{{ model_key }}" id="visible_{{ model_key }}" {% if grid_val.visible %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </td>
+                    
+                    <!-- View Permission -->
+                    <td>
+                        <label class="switch toggle-container">
+                            <input type="checkbox" class="toggle-input perm-toggle" data-model="{{ grid_val.name }}" data-action="View" name="perm_view_{{ model_key }}" id="perm_view_{{ model_key }}" {% if grid_val.view %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </td>
+
+                    <!-- Add Permission -->
+                    <td>
+                        <label class="switch toggle-container">
+                            <input type="checkbox" class="toggle-input perm-toggle" data-model="{{ grid_val.name }}" data-action="Add" name="perm_add_{{ model_key }}" id="perm_add_{{ model_key }}" {% if grid_val.add %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </td>
+
+                    <!-- Edit Permission -->
+                    <td>
+                        <label class="switch toggle-container">
+                            <input type="checkbox" class="toggle-input perm-toggle" data-model="{{ grid_val.name }}" data-action="Edit" name="perm_change_{{ model_key }}" id="perm_change_{{ model_key }}" {% if grid_val.change %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </td>
+
+                    <!-- Delete Permission -->
+                    <td>
+                        <label class="switch toggle-container">
+                            <input type="checkbox" class="toggle-input perm-toggle" data-model="{{ grid_val.name }}" data-action="Delete" name="perm_delete_{{ model_key }}" id="perm_delete_{{ model_key }}" {% if grid_val.delete %}checked{% endif %}>
+                            <span class="slider"></span>
+                        </label>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Live Permission Summary -->
+    <div class="summary-box">
+        <div class="summary-title">Live Permission Summary</div>
+        <div id="live-summary" class="summary-content">
+            Loading summary...
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('.toggle-input');
+            const summaryDiv = document.getElementById('live-summary');
+
+            function updateSummary() {
+                let summaryLines = [];
+                const rows = document.querySelectorAll('.premium-grid tbody tr');
+
+                rows.forEach(row => {
+                    const visibleToggle = row.querySelector('.visible-toggle');
+                    const permToggles = row.querySelectorAll('.perm-toggle');
+                    
+                    if (visibleToggle && visibleToggle.checked) {
+                        const modelName = visibleToggle.dataset.model;
+                        let actions = [];
+                        
+                        permToggles.forEach(pt => {
+                            if (pt.checked) {
+                                actions.push(pt.dataset.action);
+                            }
+                        });
+
+                        if (actions.length > 0) {
+                            summaryLines.push(`Can <span class="summary-highlight">${actions.join(', ')}</span> in <span class="summary-highlight">${modelName}</span>`);
+                        } else {
+                            summaryLines.push(`Can only view the <span class="summary-highlight">${modelName}</span> panel with no record access.`);
+                        }
+                    }
+                });
+
+                if (summaryLines.length === 0) {
+                    summaryDiv.innerHTML = "Employee has no access to any panels.";
+                } else {
+                    summaryDiv.innerHTML = "Employee will be able to:<br>• " + summaryLines.join("<br>• ");
+                }
+            }
+
+            // Bind events
+            inputs.forEach(input => {
+                input.addEventListener('change', updateSummary);
+            });
+
+            // Initial render
+            updateSummary();
+        });
+    </script>
+{% endblock %}
