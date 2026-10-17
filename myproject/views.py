@@ -1,5 +1,5 @@
 import secrets
-from decouple import config
+from django.conf import settings
 from django.db import connection
 from django.http import JsonResponse
 from django.views.decorators.http import require_GET
@@ -7,10 +7,7 @@ from django.views.decorators.http import require_GET
 
 @require_GET
 def database_keepalive(request):
-    expected_token = config(
-        "SUPABASE_KEEPALIVE_TOKEN",
-        default="",
-    )
+    expected_token = getattr(settings, "SUPABASE_KEEPALIVE_TOKEN", "")
     provided_token = request.headers.get(
         "X-Keepalive-Token", ""
     )

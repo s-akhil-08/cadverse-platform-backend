@@ -204,3 +204,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Supabase Keepalive Token (Loaded strictly from environment variables)
+SUPABASE_KEEPALIVE_TOKEN = os.getenv('SUPABASE_KEEPALIVE_TOKEN', '')
+
