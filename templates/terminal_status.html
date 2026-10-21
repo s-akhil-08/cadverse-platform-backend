@@ -2,27 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CADverse Backend Terminal Status</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>CADverse Platform Core Engine | Terminal Status</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%200%20100%20100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
     <style>
         :root {
             --bg-color: #000000;
-            --panel-bg: #050505;
-            --header-bg: #0c0c0c;
-            --border-color: #1a1a1a;
-            --text-color: #e0e0e0;
-            --text-dim: #737373;
-            --text-highlight: #ffffff;
-            --green: #22c55e;
-            --green-glow: rgba(34, 197, 94, 0.25);
-            --amber: #f59e0b;
-            --amber-glow: rgba(245, 158, 11, 0.25);
-            --red: #ef4444;
-            --red-glow: rgba(239, 68, 68, 0.25);
-            --cyan: #06b6d4;
+            --term-panel: #050505;
+            --term-card: #0a0a0a;
+            --term-border: #1f1f1f;
+            --term-border-hover: #333333;
+            --term-text: #e5e5e5;
+            --term-dim: #737373;
+            --term-muted: #525252;
+            --term-green: #22c55e;
+            --term-green-glow: rgba(34, 197, 94, 0.25);
+            --term-amber: #eab308;
+            --term-red: #ef4444;
+            --term-cyan: #38bdf8;
+            --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, 'Courier New', monospace;
         }
 
         * {
@@ -31,120 +29,155 @@
             padding: 0;
         }
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
-            min-height: 100vh;
+        html, body {
             width: 100%;
-            display: flex;
-            flex-direction: column;
-            overflow-x: hidden;
-            font-size: 13.5px;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--term-text);
+            font-family: var(--font-mono);
+            font-size: clamp(11.5px, 1.4vw, 13px);
             line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Top Sticky Terminal Bar */
-        .term-header {
-            background: var(--header-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 10px 18px;
+        /* Full Window Terminal Container - Spans edge-to-edge */
+        .terminal-container {
+            width: 100%;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Sticky Chrome Header */
+        .terminal-header {
+            width: 100%;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: #080808;
+            border-bottom: 1px solid var(--term-border);
+            padding: 10px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 50;
+            gap: 12px;
         }
 
-        .term-controls {
+        .window-controls {
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .dot {
+        .control-dot {
             width: 11px;
             height: 11px;
             border-radius: 50%;
             display: inline-block;
         }
-        .dot-red { background: #ef4444; }
-        .dot-yellow { background: #f59e0b; }
-        .dot-green { background: #22c55e; }
 
-        .term-title {
-            color: var(--text-dim);
-            font-size: 12px;
+        .dot-red { background-color: #ef4444; }
+        .dot-yellow { background-color: #eab308; }
+        .dot-green { background-color: #22c55e; }
+
+        .terminal-title {
+            color: #a3a3a3;
+            font-size: 11.5px;
             letter-spacing: 0.5px;
-            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .term-clock {
-            color: var(--green);
-            font-size: 12px;
-            font-weight: 500;
+        .terminal-clock {
+            color: var(--term-cyan);
+            font-size: 11.5px;
+            font-weight: 600;
+            white-space: nowrap;
+            background: #0d0d0d;
+            padding: 2px 8px;
+            border: 1px solid var(--term-border);
+            border-radius: 4px;
         }
 
-        /* Terminal Body */
-        .term-body {
-            flex: 1;
-            padding: 24px 20px;
-            max-width: 1200px;
+        /* Main Workspace Body */
+        .terminal-body {
+            flex: 1 0 auto;
             width: 100%;
-            margin: 0 auto;
+            padding: 18px 24px 28px;
             display: flex;
             flex-direction: column;
-            gap: 22px;
+            gap: 16px;
         }
 
-        /* Banner Art */
-        .ascii-banner {
-            color: var(--green);
-            font-weight: 700;
-            white-space: pre;
-            font-size: 11px;
+        /* ASCII Header / Desktop Banner */
+        .banner-desktop {
+            display: block;
+            color: var(--term-green);
+            font-size: clamp(8px, 1.15vw, 12px);
             line-height: 1.15;
+            white-space: pre;
             overflow-x: auto;
-            text-shadow: 0 0 12px var(--green-glow);
             user-select: none;
+            padding: 4px 0 8px;
         }
 
-        .mobile-banner {
+        /* Mobile Compact Banner */
+        .banner-mobile {
             display: none;
-            color: var(--green);
-            font-weight: 700;
-            font-size: 16px;
-            letter-spacing: 2px;
-            border-left: 3px solid var(--green);
-            padding-left: 10px;
+            flex-direction: column;
+            gap: 4px;
+            padding: 10px 12px;
+            background-color: var(--term-panel);
+            border: 1px solid var(--term-border);
+            border-radius: 6px;
         }
 
-        /* Status Hero Pill */
+        .banner-mobile .banner-badge {
+            color: var(--term-green);
+            font-weight: 700;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+        }
+
+        .banner-mobile .banner-sub {
+            color: var(--term-dim);
+            font-size: 11px;
+        }
+
+        /* Dynamic Status Hero Banner */
         .status-hero {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-left: 4px solid var(--green);
-            padding: 14px 18px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 12px;
+            padding: 14px 18px;
+            background-color: var(--term-panel);
+            border: 1px solid var(--term-border);
+            border-left: 4px solid var(--term-green);
+            border-radius: 4px;
             transition: border-color 0.3s ease;
         }
 
         .status-hero.online {
-            border-left-color: var(--green);
-        }
-        .status-hero.degraded {
-            border-left-color: var(--amber);
-        }
-        .status-hero.offline {
-            border-left-color: var(--red);
+            border-left-color: var(--term-green);
         }
 
-        .status-left {
+        .status-hero.degraded {
+            border-left-color: var(--term-amber);
+        }
+
+        .status-hero.offline {
+            border-left-color: var(--term-red);
+        }
+
+        .hero-left {
             display: flex;
             align-items: center;
             gap: 12px;
@@ -154,528 +187,742 @@
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            background-color: var(--green);
-            box-shadow: 0 0 10px var(--green);
-            animation: pulse 1.8s infinite;
+            background-color: var(--term-green);
+            box-shadow: 0 0 10px var(--term-green);
+            flex-shrink: 0;
+            animation: pulse-ring 2s infinite ease-in-out;
         }
 
-        @keyframes pulse {
+        @keyframes pulse-ring {
             0% { transform: scale(0.95); opacity: 0.8; }
             50% { transform: scale(1.15); opacity: 1; }
             100% { transform: scale(0.95); opacity: 0.8; }
         }
 
-        .status-text {
-            font-size: 14px;
+        .hero-title {
+            font-size: clamp(12.5px, 1.6vw, 15px);
             font-weight: 700;
-            letter-spacing: 1px;
+            color: #ffffff;
+            letter-spacing: 0.5px;
         }
 
-        .status-meta {
-            color: var(--text-dim);
-            font-size: 12px;
+        .hero-subtitle {
+            font-size: 11.5px;
+            color: var(--term-dim);
+            margin-top: 2px;
         }
 
-        /* Action Buttons */
-        .action-grid {
+        .hero-metrics {
             display: flex;
-            flex-wrap: wrap;
+            align-items: center;
             gap: 12px;
+            flex-wrap: wrap;
         }
 
-        .term-btn {
+        .metric-pill {
+            font-size: 11px;
+            padding: 4px 10px;
+            background: #0f0f0f;
+            border: 1px solid var(--term-border);
+            border-radius: 3px;
+            color: var(--term-dim);
+        }
+
+        .metric-pill strong {
+            color: var(--term-text);
+        }
+
+        /* Two-Column Responsive Diagnostic Grid */
+        .terminal-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            width: 100%;
+        }
+
+        .term-card {
+            background-color: var(--term-panel);
+            border: 1px solid var(--term-border);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: border-color 0.2s ease;
+        }
+
+        .term-card:hover {
+            border-color: var(--term-border-hover);
+        }
+
+        .term-card-header {
+            padding: 8px 14px;
+            background-color: #0c0c0c;
+            border-bottom: 1px solid var(--term-border);
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #d4d4d4;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            letter-spacing: 0.5px;
+        }
+
+        .term-card-content {
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .kv-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 12px;
+            border-bottom: 1px dashed #141414;
+            padding-bottom: 5px;
+        }
+
+        .kv-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .kv-key {
+            color: var(--term-dim);
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+
+        .kv-val {
+            color: var(--term-text);
+            text-align: right;
+            word-break: break-word;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .status-online {
+            background: rgba(34, 197, 94, 0.12);
+            color: var(--term-green);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .status-amber {
+            background: rgba(234, 179, 8, 0.12);
+            color: var(--term-amber);
+            border: 1px solid rgba(234, 179, 8, 0.3);
+        }
+
+        .status-offline {
+            background: rgba(239, 68, 68, 0.12);
+            color: var(--term-red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            display: inline-block;
+        }
+
+        .term-link {
+            color: var(--term-cyan);
+            text-decoration: none;
+            border-bottom: 1px dotted var(--term-cyan);
+            transition: color 0.15s, border-color 0.15s;
+        }
+
+        .term-link:hover {
+            color: #ffffff;
+            border-bottom-color: #ffffff;
+        }
+
+        /* Live Terminal Stream Box */
+        .term-stream-box {
+            background-color: #030303;
+            border: 1px solid var(--term-border);
+            border-radius: 4px;
+            padding: 12px 14px;
+            font-size: 11.5px;
+            line-height: 1.5;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 140px;
+            overflow-y: auto;
+            font-family: var(--font-mono);
+        }
+
+        .stream-line {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            word-break: break-all;
+        }
+
+        .stream-time {
+            color: var(--term-dim);
+            flex-shrink: 0;
+            font-size: 10.5px;
+        }
+
+        .stream-ok { color: var(--term-green); }
+        .stream-warn { color: var(--term-amber); }
+        .stream-err { color: var(--term-red); }
+        .stream-info { color: #a3a3a3; }
+
+        /* Action Navigation Bar */
+        .actions-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 4px;
+        }
+
+        /* Primary Action: High-visibility Admin Button */
+        .btn-launch-admin {
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            background-color: #0d0d0d;
+            color: var(--term-green);
+            border: 1.5px solid var(--term-green);
             padding: 11px 20px;
-            font-size: 13px;
-            font-family: inherit;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            border-radius: 2px;
-            transition: all 0.2s ease;
-            background: transparent;
-        }
-
-        .term-btn-primary {
-            background: #000000;
-            color: var(--green);
-            border: 1.5px solid var(--green);
-            box-shadow: 0 0 12px var(--green-glow);
-        }
-
-        .term-btn-primary:hover {
-            background: var(--green);
-            color: #000000;
-            box-shadow: 0 0 20px rgba(34, 197, 94, 0.6);
-        }
-
-        .term-btn-secondary {
-            background: #000000;
-            color: var(--text-color);
-            border: 1px solid var(--border-color);
-        }
-
-        .term-btn-secondary:hover {
-            border-color: var(--text-color);
-            color: #ffffff;
-            background: #111111;
-        }
-
-        .term-btn-action {
-            background: #000000;
-            color: var(--cyan);
-            border: 1px solid #164e63;
-        }
-
-        .term-btn-action:hover {
-            background: #083344;
-            color: #67e8f9;
-            border-color: var(--cyan);
-        }
-
-        /* Diagnostic Data Grid */
-        .grid-layout {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 16px;
-        }
-
-        .diag-box {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .diag-title {
-            color: var(--cyan);
-            font-weight: 600;
-            font-size: 12px;
-            letter-spacing: 0.8px;
-            border-bottom: 1px dashed #262626;
-            padding-bottom: 6px;
-            text-transform: uppercase;
-        }
-
-        .diag-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 10px;
+            font-family: var(--font-mono);
             font-size: 12.5px;
-        }
-
-        .diag-key {
-            color: var(--text-dim);
-            flex-shrink: 0;
-        }
-
-        .diag-val {
-            color: var(--text-color);
-            text-align: right;
-            word-break: break-all;
-            font-weight: 500;
-        }
-
-        .diag-val.hl {
-            color: var(--green);
-            font-weight: 600;
-        }
-
-        .diag-val a {
-            color: var(--cyan);
+            font-weight: 700;
+            letter-spacing: 0.5px;
             text-decoration: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.15);
         }
 
-        .diag-val a:hover {
-            text-decoration: underline;
+        .btn-launch-admin:hover {
+            background-color: var(--term-green);
+            color: #000000;
+            box-shadow: 0 0 16px rgba(34, 197, 94, 0.4);
+            transform: translateY(-1px);
         }
 
-        /* Live Terminal Log / Output Stream */
-        .log-box {
-            background: #030303;
-            border: 1px solid var(--border-color);
-            padding: 14px;
-            font-size: 12px;
-            color: #a3a3a3;
-            max-height: 180px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
+        /* Secondary Action Buttons */
+        .btn-term-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             gap: 6px;
-        }
-
-        .log-line {
-            display: flex;
-            gap: 10px;
-        }
-
-        .log-ts {
-            color: var(--text-dim);
-            flex-shrink: 0;
-        }
-
-        .log-tag {
-            color: var(--cyan);
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-
-        .log-msg {
+            background-color: #080808;
             color: #d4d4d4;
+            border: 1px solid var(--term-border);
+            padding: 11px 16px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 500;
+            text-decoration: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
-        /* Bottom Command Prompt */
-        .term-footer {
-            background: var(--header-bg);
-            border-top: 1px solid var(--border-color);
-            padding: 12px 20px;
+        .btn-term-action:hover {
+            border-color: var(--term-border-hover);
+            color: #ffffff;
+            background-color: #121212;
+        }
+
+        /* Bottom Command Bar */
+        .terminal-footer {
+            width: 100%;
+            background-color: #080808;
+            border-top: 1px solid var(--term-border);
+            padding: 9px 18px;
+            font-size: 11.5px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            color: var(--text-dim);
-            font-size: 12px;
+            gap: 12px;
             flex-wrap: wrap;
-            gap: 10px;
         }
 
-        .prompt-line {
+        .prompt-cmd {
             display: flex;
             align-items: center;
             gap: 8px;
-            color: var(--text-color);
-        }
-
-        .prompt-arrow {
-            color: var(--green);
-            font-weight: 700;
+            color: #a3a3a3;
         }
 
         .cursor {
             display: inline-block;
-            width: 8px;
-            height: 15px;
-            background: var(--green);
-            animation: blink 1s infinite;
+            width: 7px;
+            height: 13px;
+            background-color: var(--term-green);
+            animation: cursor-blink 1s step-end infinite;
             vertical-align: middle;
         }
 
-        @keyframes blink {
-            0%, 49% { opacity: 1; }
-            50%, 100% { opacity: 0; }
+        @keyframes cursor-blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
         }
 
-        /* Responsive Breakpoints */
+        .kbd-badge {
+            color: var(--term-dim);
+            font-size: 11px;
+        }
+
+        /* ---------------------------------------------------- */
+        /* Responsive Media Queries Across All Screens          */
+        /* ---------------------------------------------------- */
+
+        /* Small to Medium Mobile Devices (320px - 640px) */
         @media (max-width: 640px) {
-            .ascii-banner {
+            .terminal-header {
+                padding: 8px 12px;
+            }
+            .terminal-body {
+                padding: 12px 14px 20px;
+                gap: 12px;
+            }
+            .banner-desktop {
                 display: none;
             }
-            .mobile-banner {
-                display: block;
+            .banner-mobile {
+                display: flex;
             }
-            .term-body {
-                padding: 16px 12px;
-                gap: 16px;
+            .terminal-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
             }
-            .action-grid {
-                flex-direction: column;
-            }
-            .term-btn {
+            .hero-left {
                 width: 100%;
             }
-            .diag-row {
+            .hero-metrics {
+                width: 100%;
+                justify-content: space-between;
+            }
+            .actions-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn-launch-admin, .btn-term-action {
+                width: 100%;
+                text-align: center;
+            }
+            .kv-row {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 2px;
             }
-            .diag-val {
+            .kv-val {
                 text-align: left;
+                justify-content: flex-start;
+            }
+            .terminal-footer {
+                padding: 8px 12px;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+        }
+
+        /* Tablets & Small Laptops (641px - 1024px) */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .terminal-body {
+                padding: 16px 20px 24px;
+            }
+            .terminal-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Desktop & Ultra-wide (1025px+) */
+        @media (min-width: 1025px) {
+            .terminal-body {
+                max-width: 1300px;
+                margin: 0 auto;
+                width: 100%;
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- Sticky Edge-to-Edge Terminal Header -->
-    <header class="term-header">
-        <div class="term-controls">
-            <span class="dot dot-red"></span>
-            <span class="dot dot-yellow"></span>
-            <span class="dot dot-green"></span>
-            <span class="term-title" style="margin-left: 8px;">cadverse-backend-terminal v2.0</span>
+<div class="terminal-container">
+    <!-- Top System Bar -->
+    <header class="terminal-header">
+        <div class="window-controls">
+            <span class="control-dot dot-red" title="Close"></span>
+            <span class="control-dot dot-yellow" title="Minimize"></span>
+            <span class="control-dot dot-green" title="Maximize"></span>
         </div>
-        <div class="term-clock" id="live-clock">UTC --:--:--</div>
+        <div class="terminal-title">
+            <span>cadverse-platform@backend-engine:</span>
+            <span style="color: var(--term-green);">~/api/v1</span>
+            <span style="color: var(--term-dim);">— [bash 5.2]</span>
+        </div>
+        <div class="terminal-clock" id="live-clock">--:--:-- UTC</div>
     </header>
 
-    <!-- Terminal Main Body -->
-    <main class="term-body">
+    <!-- Main Terminal Workspace -->
+    <main class="terminal-body">
         
-        <!-- Large ASCII Banner for Desktop/Tablet -->
-        <pre class="ascii-banner">
-  ____    _    ____                               ____             _                  _ 
- / ___|  / \  |  _ \__   _____ _ __ ___  ___     | __ )  __ _  ___| | _____ _ __   __| |
-| |     / _ \ | | | \ \ / / _ \ '__/ __|/ _ \    |  _ \ / _` |/ __| |/ / _ \ '_ \ / _` |
-| |___ / ___ \| |_| |\ V /  __/ |  \__ \  __/    | |_) | (_| | (__|   <  __/ | | | (_| |
- \____/_/   \_\____/  \_/ \___|_|  |___/\___|    |____/ \__,_|\___|_|\_\___|_| |_|\__,_|
+        <!-- Large Screen ASCII Banner -->
+        <pre class="banner-desktop">
+   ____    _    ____                              
+  / ___|  / \  |  _ \__   _____ _ __ ___  ___     
+ | |     / _ \ | | | \ \ / / _ \ '__/ __|/ _ \    
+ | |___ / ___ \| |_| |\ V /  __/ |  \__ \  __/    
+  \____/_/   \_\____/  \_/ \___|_|  |___/\___|    
+========================================================================================
+ [ CADVERSE PLATFORM REST API &amp; CORE ENGINE - RUNTIME STATUS &amp; DEVELOPER SPECIFICATION ]
 ========================================================================================</pre>
 
-        <!-- Compact Header for Mobile Screens -->
-        <div class="mobile-banner">
-            [ CADVERSE BACKEND WORKSTATION ]
+        <!-- Mobile Compact Banner -->
+        <div class="banner-mobile">
+            <div class="banner-badge">⚡ CADVERSE PLATFORM CORE ENGINE</div>
+            <div class="banner-sub">Backend API Runtime Node &amp; Developer Specification</div>
         </div>
 
-        <!-- Real-Time Server Health Status Pill -->
+        <!-- Dynamic Status Hero Banner -->
         <div class="status-hero online" id="status-hero">
-            <div class="status-left">
+            <div class="hero-left">
                 <span class="pulse-indicator" id="pulse-indicator"></span>
                 <div>
-                    <div class="status-text" id="status-title" style="color: var(--green);">● SERVER STATUS: ONLINE & ACTIVE</div>
-                    <div class="status-meta" id="status-subtitle">Live health check verified · PostgreSQL responsive</div>
+                    <div class="hero-title" id="status-title">● SERVER STATUS: ONLINE &amp; ACTIVE</div>
+                    <div class="hero-subtitle" id="status-subtitle">Backend operational &bull; Gunicorn WSGI cluster responding</div>
                 </div>
             </div>
-            <div class="status-meta">
-                <span>Latency: <strong id="latency-val" style="color: var(--text-highlight);">-- ms</strong></span>
-                <span style="margin: 0 6px;">|</span>
-                <span id="last-probe-time">Last probe: Just now</span>
+            <div class="hero-metrics">
+                <div class="metric-pill">
+                    LATENCY: <strong id="latency-val">measuring...</strong>
+                </div>
+                <div class="metric-pill">
+                    MODE: <strong>PRODUCTION</strong>
+                </div>
+                <div class="metric-pill">
+                    UPTIME: <strong>100%</strong>
+                </div>
             </div>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="action-grid">
-            <a href="/admin/" class="term-btn term-btn-primary" title="Launch Admin Panel">
-                <span>➔ GO TO ADMIN PANEL (/admin/)</span>
+        <!-- Two-Column Responsive Diagnostic Grid -->
+        <div class="terminal-grid">
+            
+            <!-- Column 1: Live Server & Database Runtime Status -->
+            <section class="term-card">
+                <div class="term-card-header">
+                    <span>[ 01 // Node Diagnostics ]</span>
+                    <span style="font-size: 10px; color: var(--term-dim);">LIVE METRICS</span>
+                </div>
+                <div class="term-card-content">
+                    <div class="kv-row">
+                        <span class="kv-key">SERVICE:</span>
+                        <span class="kv-val">cadverse-platform-backend</span>
+                    </div>
+
+                    <div class="kv-row">
+                        <span class="kv-key">HEALTH:</span>
+                        <div class="kv-val">
+                            <span id="health-pill" class="status-pill status-amber">
+                                <span class="pulse-dot"></span>
+                                <span id="health-text">PROBING API...</span>
+                            </span>
+                            <span id="latency-text" style="color: var(--term-dim); font-size: 10.5px;">measuring...</span>
+                        </div>
+                    </div>
+
+                    <div class="kv-row">
+                        <span class="kv-key">DATABASE:</span>
+                        <div class="kv-val">
+                            {% if db_status == "ONLINE" %}
+                                <span class="status-pill status-online">
+                                    <span class="pulse-dot"></span>
+                                    <span>POSTGRESQL (SUPABASE)</span>
+                                </span>
+                                {% if db_latency_ms %}
+                                    <span style="color: var(--term-dim); font-size: 10.5px;">[{{ db_latency_ms }}ms]</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="status-pill status-amber">
+                                    <span>{{ db_status }}</span>
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="kv-row">
+                        <span class="kv-key">STACK:</span>
+                        <span class="kv-val">Django v{{ django_version }} &bull; Python v{{ python_version }}</span>
+                    </div>
+
+                    <div class="kv-row">
+                        <span class="kv-key">GATEWAY:</span>
+                        <span class="kv-val">Gunicorn WSGI &bull; {{ protocol }}</span>
+                    </div>
+
+                    <div class="kv-row">
+                        <span class="kv-key">HOST NODE:</span>
+                        <span class="kv-val" style="color: var(--term-cyan);">{{ host }}</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Column 2: Developer & Git Profile Specification -->
+            <section class="term-card">
+                <div class="term-card-header">
+                    <span>[ 02 // Developer &amp; Git Profile ]</span>
+                    <span style="font-size: 10px; color: var(--term-dim);">GITHUB CI/CD</span>
+                </div>
+                <div class="term-card-content">
+                    <div class="kv-row">
+                        <span class="kv-key">DEVELOPER:</span>
+                        <div class="kv-val">
+                            <span style="font-weight: 700; color: #ffffff;">{{ github_user }}</span>
+                            <a href="{{ github_profile_url }}" target="_blank" rel="noopener noreferrer" class="term-link" style="font-size: 10.5px;">[@{{ github_user }}] ↗</a>
+                        </div>
+                    </div>
+
+                    <div class="kv-row">
+                        <span class="kv-key">REPOSITORY:</span>
+                        <div class="kv-val">
+                            <a href="{{ github_repo_url }}" target="_blank" rel="noopener noreferrer" class="term-link">{{ github_user }}/cadverse-platform-backend ↗</a>
+                        </div>
+                    </div>
+
+                    <div class="kv-row">
+                        <span class="kv-key">BRANCH / HEAD:</span>
+                        <span class="kv-val">
+                            <span style="color: var(--term-green); font-weight: 700;">{{ git_branch }}</span>
+                            <span style="color: var(--term-dim); font-size: 10.5px;">@ {{ last_commit_hash }}</span>
+                        </span>
+                    </div>
+
+                    <div class="kv-row">
+                        <span class="kv-key">LAST COMMIT:</span>
+                        <span class="kv-val" style="color: #a3a3a3; font-size: 11px;">{{ last_commit_msg }}</span>
+                    </div>
+
+                    <div class="kv-row">
+                        <span class="kv-key">AUTOMATION:</span>
+                        <span class="kv-val">
+                            <span class="status-pill status-online" style="font-size: 10px;">
+                                <span class="pulse-dot"></span>
+                                <span>GITHUB ACTIONS ACTIVE</span>
+                            </span>
+                        </span>
+                    </div>
+
+                    <div class="kv-row">
+                        <span class="kv-key">SCHEDULE:</span>
+                        <span class="kv-val" style="font-size: 11px; color: var(--term-dim);">Twice Daily Database Keepalive (02:30, 14:30 UTC)</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Live Terminal Stream Logs Box -->
+        <section class="term-stream-box" id="log-container" aria-label="Terminal log output">
+            <div class="stream-line">
+                <span class="stream-time">[INIT]</span>
+                <span class="stream-info">WSGI worker cluster bound to 0.0.0.0:8000 on node {{ host }}</span>
+            </div>
+            <div class="stream-line">
+                <span class="stream-time">[DB]</span>
+                <span class="stream-info">Supabase PostgreSQL connection pool verified &amp; active</span>
+            </div>
+            <div class="stream-line">
+                <span class="stream-time">[ROUTER]</span>
+                <span class="stream-ok">Mounted endpoints: /admin/, /api/health/, /api/health/db/, /api/projects/</span>
+            </div>
+            <div class="stream-line" id="live-probe-line">
+                <span class="stream-time">[PROBE]</span>
+                <span class="stream-warn" id="probe-msg">Transmitting health probe to /api/health/...</span>
+            </div>
+        </section>
+
+        <!-- Action Navigation Bar -->
+        <nav class="actions-toolbar" aria-label="Terminal Navigation">
+            <!-- Clearly Visible Primary Admin Button -->
+            <a href="/admin/" id="admin-btn" class="btn-launch-admin" title="Click or press Enter / A">
+                <span>[ ➔ GO TO ADMIN PANEL (/admin/) ]</span>
             </a>
-            <button type="button" class="term-btn term-btn-action" id="btn-probe" onclick="runHealthProbe()">
-                <span>↺ Run Health Probe</span>
+
+            <!-- Developer GitHub Profile Button -->
+            <a href="{{ github_profile_url }}" target="_blank" rel="noopener noreferrer" class="btn-term-action">
+                <span>[ 👤 GitHub: @{{ github_user }} ↗ ]</span>
+            </a>
+
+            <!-- GitHub Source Repository Button -->
+            <a href="{{ github_repo_url }}" target="_blank" rel="noopener noreferrer" class="btn-term-action">
+                <span>[ 📦 Repository ↗ ]</span>
+            </a>
+
+            <!-- Live Re-probe Button -->
+            <button type="button" class="btn-term-action" onclick="runProbe();" title="Press R to probe">
+                <span>[ ↺ Run Health Probe ]</span>
             </button>
-            <a href="https://github.com/s-akhil-08" target="_blank" rel="noopener noreferrer" class="term-btn term-btn-secondary">
-                <span>👤 GitHub: @s-akhil-08 ↗</span>
-            </a>
-            <a href="https://github.com/s-akhil-08/cadverse-platform-backend" target="_blank" rel="noopener noreferrer" class="term-btn term-btn-secondary">
-                <span>📦 Repository ↗</span>
-            </a>
-        </div>
-
-        <!-- Diagnostic Information Grid -->
-        <div class="grid-layout">
-            <!-- Server Specs -->
-            <div class="diag-box">
-                <div class="diag-title">// Engine & Server Runtime</div>
-                <div class="diag-row">
-                    <span class="diag-key">Platform:</span>
-                    <span class="diag-val hl">{{ platform_name|default:"Render Cloud (Linux)" }}</span>
-                </div>
-                <div class="diag-row">
-                    <span class="diag-key">Python Version:</span>
-                    <span class="diag-val">{{ python_version|default:"3.11" }}</span>
-                </div>
-                <div class="diag-row">
-                    <span class="diag-key">Django Version:</span>
-                    <span class="diag-val">{{ django_version|default:"5.1.7" }}</span>
-                </div>
-                <div class="diag-row">
-                    <span class="diag-key">Host Domain:</span>
-                    <span class="diag-val">{{ host_name|default:"cadverse-platform-backend.onrender.com" }}</span>
-                </div>
-                <div class="diag-row">
-                    <span class="diag-key">Security / TLS:</span>
-                    <span class="diag-val hl">Enforced HTTPS (TLSv1.3)</span>
-                </div>
-            </div>
-
-            <!-- Database & Storage Specs -->
-            <div class="diag-box">
-                <div class="diag-title">// Database & Cloud Storage</div>
-                <div class="diag-row">
-                    <span class="diag-key">Primary Database:</span>
-                    <span class="diag-val hl">{{ db_engine|default:"Supabase PostgreSQL (Pooled)" }}</span>
-                </div>
-                <div class="diag-row">
-                    <span class="diag-key">Database State:</span>
-                    <span class="diag-val hl" id="db-state-val">{{ db_status|default:"Connected" }} ({{ db_latency|default:"< 50" }} ms)</span>
-                </div>
-                <div class="diag-row">
-                    <span class="diag-key">Storage Buckets:</span>
-                    <span class="diag-val">cadverse-files, showcase-before/after</span>
-                </div>
-                <div class="diag-row">
-                    <span class="diag-key">Keepalive Scheduled:</span>
-                    <span class="diag-val hl">Twice Daily (GitHub Actions)</span>
-                </div>
-                <div class="diag-row">
-                    <span class="diag-key">API Authentication:</span>
-                    <span class="diag-val">Token / Session / OTP</span>
-                </div>
-            </div>
-
-            <!-- GitHub & Deployment Specs -->
-            <div class="diag-box">
-                <div class="diag-title">// Version Control & Deployment</div>
-                <div class="diag-row">
-                    <span class="diag-key">Maintainer:</span>
-                    <span class="diag-val"><a href="https://github.com/s-akhil-08" target="_blank">s-akhil-08</a></span>
-                </div>
-                <div class="diag-row">
-                    <span class="diag-key">Repository:</span>
-                    <span class="diag-val"><a href="https://github.com/s-akhil-08/cadverse-platform-backend" target="_blank">cadverse-platform-backend</a></span>
-                </div>
-                <div class="diag-row">
-                    <span class="diag-key">Active Branch:</span>
-                    <span class="diag-val hl">{{ git_branch|default:"main" }}</span>
-                </div>
-                <div class="diag-row">
-                    <span class="diag-key">Head Commit:</span>
-                    <span class="diag-val" title="{{ git_commit_message|default:'Latest Commit' }}">
-                        <code>{{ git_commit_short|default:"ffccd84" }}</code>
-                    </span>
-                </div>
-                <div class="diag-row">
-                    <span class="diag-key">Deployment Status:</span>
-                    <span class="diag-val hl">Live on Render</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Live Terminal Stream / Diagnostic Console -->
-        <div class="diag-box" style="padding: 12px;">
-            <div class="diag-title" style="margin-bottom: 8px;">// Live Diagnostic Activity Stream</div>
-            <div class="log-box" id="log-box">
-                <div class="log-line">
-                    <span class="log-ts">[INIT]</span>
-                    <span class="log-tag">SYSTEM</span>
-                    <span class="log-msg">Terminal status initialized. Environment: Production.</span>
-                </div>
-                <div class="log-line">
-                    <span class="log-ts">[PROBE]</span>
-                    <span class="log-tag">HEALTH</span>
-                    <span class="log-msg">Endpoint /health responsive with HTTP 200.</span>
-                </div>
-            </div>
-        </div>
+        </nav>
 
     </main>
 
-    <!-- Pinned Command Prompt Footer -->
-    <footer class="term-footer">
-        <div class="prompt-line">
-            <span class="prompt-arrow">cadverse@render:~$</span>
-            <span>status --live --verbose</span>
+    <!-- Bottom Command Line Terminal Prompt -->
+    <footer class="terminal-footer">
+        <div class="prompt-cmd">
+            <span style="color: var(--term-dim);">root@cadverse-platform:~$</span>
+            <span style="color: #d4d4d4;">systemctl is-active backend.service</span>
             <span class="cursor"></span>
         </div>
-        <div>
-            Shortcuts: Press <kbd style="background:#171717; border:1px solid #333; padding:2px 5px; color:#fff;">A</kbd> or <kbd style="background:#171717; border:1px solid #333; padding:2px 5px; color:#fff;">Enter</kbd> to launch Admin Panel
+        <div class="kbd-badge">
+            Shortcut: Press <kbd style="color: #fff; background: #222; padding: 1px 4px; border-radius: 3px;">Enter</kbd> or <kbd style="color: #fff; background: #222; padding: 1px 4px; border-radius: 3px;">A</kbd> for Admin &bull; <kbd style="color: #fff; background: #222; padding: 1px 4px; border-radius: 3px;">R</kbd> to Probe
         </div>
     </footer>
+</div>
 
-    <!-- Interactive Health Probe Script -->
-    <script>
-        // Real-Time UTC Clock
+<script>
+    (function() {
+        const healthPill = document.getElementById('health-pill');
+        const healthText = document.getElementById('health-text');
+        const latencyText = document.getElementById('latency-text');
+        const liveClock = document.getElementById('live-clock');
+        const logContainer = document.getElementById('log-container');
+        const probeMsg = document.getElementById('probe-msg');
+        const hero = document.getElementById('status-hero');
+        const heroTitle = document.getElementById('status-title');
+        const heroSubtitle = document.getElementById('status-subtitle');
+        const heroLatency = document.getElementById('latency-val');
+        const heroPulse = document.getElementById('pulse-indicator');
+
+        // Live Ticking UTC Clock
         function updateClock() {
             const now = new Date();
-            const utcString = now.toUTCString().split(' ')[4] + ' UTC';
-            document.getElementById('live-clock').textContent = utcString;
+            const h = String(now.getUTCHours()).padStart(2, '0');
+            const m = String(now.getUTCMinutes()).padStart(2, '0');
+            const s = String(now.getUTCSeconds()).padStart(2, '0');
+            liveClock.textContent = `${h}:${m}:${s} UTC`;
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Terminal Log Append Helper
-        function appendLog(tag, msg, isError = false) {
-            const logBox = document.getElementById('log-box');
-            const now = new Date().toTimeString().split(' ')[0];
-            const div = document.createElement('div');
-            div.className = 'log-line';
-            div.innerHTML = `
-                <span class="log-ts">[${now}]</span>
-                <span class="log-tag" style="color: ${isError ? 'var(--red)' : 'var(--cyan)'}">${tag}</span>
-                <span class="log-msg" style="color: ${isError ? '#f87171' : '#d4d4d4'}">${msg}</span>
-            `;
-            logBox.appendChild(div);
-            logBox.scrollTop = logBox.scrollHeight;
+        function addLog(type, text) {
+            const now = new Date();
+            const timeStr = now.toISOString().substring(11, 19);
+            const line = document.createElement('div');
+            line.className = 'stream-line';
+
+            let msgClass = 'stream-info';
+            if (type === 'OK') msgClass = 'stream-ok';
+            else if (type === 'WARN') msgClass = 'stream-warn';
+            else if (type === 'ERR') msgClass = 'stream-err';
+
+            line.innerHTML = `<span class="stream-time">[${timeStr}]</span><span class="${msgClass}">HTTP /api/health/ ➔ ${text}</span>`;
+            logContainer.appendChild(line);
+            logContainer.scrollTop = logContainer.scrollHeight;
         }
 
         // Live Dynamic Health Probe
-        async function runHealthProbe() {
-            const hero = document.getElementById('status-hero');
-            const title = document.getElementById('status-title');
-            const subtitle = document.getElementById('status-subtitle');
-            const latencyEl = document.getElementById('latency-val');
-            const pulse = document.getElementById('pulse-indicator');
-            const probeBtn = document.getElementById('btn-probe');
-            const lastProbe = document.getElementById('last-probe-time');
-
-            if (probeBtn) {
-                probeBtn.disabled = true;
-                probeBtn.style.opacity = '0.6';
-            }
+        window.runProbe = async function() {
+            healthText.textContent = 'CHECKING...';
+            healthPill.className = 'status-pill status-amber';
+            latencyText.textContent = 'pinging...';
 
             const startTime = performance.now();
             try {
-                // Request live health check from Django backend
-                const response = await fetch('/health?t=' + Date.now(), {
+                const response = await fetch('/api/health/?_t=' + Date.now(), {
                     cache: 'no-store',
-                    headers: { 'Accept': 'text/plain, application/json' }
+                    headers: { 'Accept': 'application/json, text/plain' }
                 });
-                const duration = Math.round(performance.now() - startTime);
-
-                latencyEl.textContent = duration + ' ms';
-                lastProbe.textContent = 'Last probe: ' + new Date().toLocaleTimeString();
+                const elapsed = Math.round(performance.now() - startTime);
 
                 if (response.ok) {
-                    hero.className = 'status-hero online';
-                    hero.style.borderLeftColor = 'var(--green)';
-                    pulse.style.backgroundColor = 'var(--green)';
-                    pulse.style.boxShadow = '0 0 10px var(--green)';
-                    title.textContent = '● SERVER STATUS: ONLINE & ACTIVE';
-                    title.style.color = 'var(--green)';
-                    subtitle.textContent = `Backend operational · Response verified in ${duration}ms`;
-                    appendLog('PROBE', `Health probe OK (${duration}ms roundtrip). HTTP ${response.status}`);
+                    healthPill.className = 'status-pill status-online';
+                    healthText.textContent = 'ONLINE / ACTIVE';
+                    latencyText.textContent = `latency: ${elapsed}ms (HTTP 200)`;
+                    
+                    if (hero) {
+                        hero.className = 'status-hero online';
+                        heroTitle.textContent = '● SERVER STATUS: ONLINE & ACTIVE';
+                        heroTitle.style.color = '#ffffff';
+                        heroSubtitle.textContent = `Backend operational · Response verified in ${elapsed}ms`;
+                        heroLatency.textContent = `${elapsed}ms`;
+                        heroPulse.style.backgroundColor = 'var(--term-green)';
+                        heroPulse.style.boxShadow = '0 0 10px var(--term-green)';
+                    }
+
+                    if (probeMsg) probeMsg.textContent = `Live probe healthy: HTTP 200 OK (${elapsed}ms) - Node responsive`;
+                    addLog('OK', `200 OK (${elapsed}ms) - Node responsive`);
                 } else {
-                    hero.className = 'status-hero degraded';
-                    hero.style.borderLeftColor = 'var(--amber)';
-                    pulse.style.backgroundColor = 'var(--amber)';
-                    pulse.style.boxShadow = '0 0 10px var(--amber)';
-                    title.textContent = '▲ SERVER STATUS: DEGRADED';
-                    title.style.color = 'var(--amber)';
-                    subtitle.textContent = `Server returned status code ${response.status}`;
-                    appendLog('WARN', `Degraded status detected: HTTP ${response.status}`, true);
+                    healthPill.className = 'status-pill status-amber';
+                    healthText.textContent = `DEGRADED (HTTP ${response.status})`;
+                    latencyText.textContent = `response error (${elapsed}ms)`;
+
+                    if (hero) {
+                        hero.className = 'status-hero degraded';
+                        heroTitle.textContent = '▲ SERVER STATUS: DEGRADED';
+                        heroSubtitle.textContent = `Server responded with HTTP ${response.status}`;
+                        heroLatency.textContent = `${elapsed}ms`;
+                        heroPulse.style.backgroundColor = 'var(--term-amber)';
+                        heroPulse.style.boxShadow = '0 0 10px var(--term-amber)';
+                    }
+
+                    addLog('WARN', `HTTP ${response.status} (${elapsed}ms)`);
                 }
             } catch (err) {
-                const duration = Math.round(performance.now() - startTime);
-                latencyEl.textContent = 'Timeout';
-                hero.className = 'status-hero offline';
-                hero.style.borderLeftColor = 'var(--red)';
-                pulse.style.backgroundColor = 'var(--red)';
-                pulse.style.boxShadow = '0 0 10px var(--red)';
-                title.textContent = '✖ SERVER STATUS: OFFLINE / UNREACHABLE';
-                title.style.color = 'var(--red)';
-                subtitle.textContent = 'Failed to connect to backend server';
-                appendLog('ERROR', `Connection failed: ${err.message}`, true);
-            } finally {
-                if (probeBtn) {
-                    probeBtn.disabled = false;
-                    probeBtn.style.opacity = '1';
+                const elapsed = Math.round(performance.now() - startTime);
+                healthPill.className = 'status-pill status-offline';
+                healthText.textContent = 'OFFLINE / UNREACHABLE';
+                latencyText.textContent = 'connection failed';
+
+                if (hero) {
+                    hero.className = 'status-hero offline';
+                    heroTitle.textContent = '✖ SERVER STATUS: OFFLINE / UNREACHABLE';
+                    heroSubtitle.textContent = 'Failed to connect to backend server';
+                    heroLatency.textContent = 'Timeout';
+                    heroPulse.style.backgroundColor = 'var(--term-red)';
+                    heroPulse.style.boxShadow = '0 0 10px var(--term-red)';
                 }
+
+                addLog('ERR', `Connection failed: ${err.message || 'Offline'}`);
             }
-        }
+        };
 
-        // Automatic probe on load & periodic 20-second interval
-        window.addEventListener('DOMContentLoaded', () => {
-            runHealthProbe();
-            setInterval(runHealthProbe, 20000);
-        });
+        // Initial probe on page load
+        runProbe();
 
-        // Keyboard Shortcut Navigation
-        window.addEventListener('keydown', (e) => {
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-            if (e.key === 'a' || e.key === 'A' || e.key === 'Enter') {
+        // Periodic background probe every 15s
+        setInterval(runProbe, 15000);
+
+        // Keyboard navigation shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (['input', 'textarea'].includes((document.activeElement.tagName || '').toLowerCase())) return;
+            if (e.key === 'Enter' || e.key === 'a' || e.key === 'A') {
                 window.location.href = '/admin/';
+            } else if (e.key === 'r' || e.key === 'R') {
+                runProbe();
             }
         });
-    </script>
+    })();
+</script>
+
 </body>
 </html>
