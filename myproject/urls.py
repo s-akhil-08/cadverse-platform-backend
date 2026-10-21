@@ -5,7 +5,7 @@ from django.conf.urls.static import static
 from django.http import HttpResponse
 
 
-from myproject.views import database_keepalive
+from myproject.views import database_keepalive, terminal_status_view
 
 
 def health_check(request):
@@ -13,6 +13,7 @@ def health_check(request):
 
 
 urlpatterns = [
+    path('', terminal_status_view, name='terminal-status'),
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
     path('api/health/db/', database_keepalive, name='database-keepalive'),
